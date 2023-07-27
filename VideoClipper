@@ -1,0 +1,52 @@
+from moviepy.editor import VideoFileClip
+import os
+
+def time_to_seconds(time_str):
+    try:
+        if ':' in time_str:
+            hours, minutes, seconds = map(int, time_str.split(":"))
+            return hours * 3600 + minutes * 60 + seconds
+        else:
+            return float(time_str)
+    except ValueError:
+        return None
+
+def get_valid_time_input(prompt):
+    while True:
+        time_str = input(prompt)
+        time_seconds = time_to_seconds(time_str)
+        if time_seconds is not None:
+            return time_seconds
+        print("Invalid input. Please enter a valid time in the format HH:MM:SS or seconds.")
+
+def create_video_clips(input_video_path, clips_count, output_folder):
+    if not os.path.exists(output_folder):
+        os.makedirs(output_folder)
+
+    video = VideoFileClip(input_video_path)
+
+    for i in range(clips_count):
+        start_time = get_valid_time_input(f"Enter the start time for clip {i + 1} (HH:MM:SS or seconds): ")
+        clip_length = get_valid_time_input(f"Enter the length of clip {i + 1} in seconds: ")
+
+        end_time = start_time + clip_length
+
+        title = input(f"Enter a title for clip {i + 1}: ")
+        clip = video.subclip(start_time, end_time)
+        output_path = os.path.join(output_folder, f"{title}.mp4")
+        clip.write_videofile(output_path, codec='libx264')
+
+    video.reader.close()
+    video.audio.reader.close_proc()
+
+if __name__ == "__main__":
+    input_video_path = "/Users/primalkarma/Desktop/LitterAK.mp4"  # Replace with your input video file path
+    
+    clips_count = int(input("How many video clips do you want to create? "))
+    litter_name = input("Enter the litter name: ")
+    project_date = input("Enter the date of birth of the litter: ")
+
+    output_folder_title = f"{litter_name}_{project_date}"
+    output_folder = os.path.join(os.path.expanduser("~/Desktop"), output_folder_title)
+
+    create_video_clips(input_video_path, clips_count, output_folder)
